@@ -12,16 +12,16 @@
 
 ## 📌 **Table of Contents**
 
-* [Overview](#-overview)
-* [Scheduling Algorithms](#-scheduling-algorithms)
-* [Project Structure](#-project-structure)
-* [Build & Run](#-build--run)
-* [Usage](#-usage)
-* [Input Format](#-input-format)
-* [Output Files](#-output-files)
-* [Performance Metrics](#-performance-metrics)
-* [Notes & Limitations](#-notes--limitations)
-* [Author](#-author)
+- [Overview](#-overview)
+- [Scheduling Algorithms](#-scheduling-algorithms)
+- [Project Structure](#-project-structure)
+- [Build & Run](#-build--run)
+- [Usage](#-usage)
+- [Input Format](#-input-format)
+- [Output Files](#-output-files)
+- [Performance Metrics](#-performance-metrics)
+- [Notes & Limitations](#-notes--limitations)
+- [Author](#-author)
 
 ---
 
@@ -29,19 +29,19 @@
 
 **SchedSim** simulates CPU process scheduling using:
 
-✅ Process generator that injects processes based on arrival time
-✅ Scheduler that manages queues and selects process execution order
-✅ Simulated clock to synchronize execution time
-✅ Real OS process execution using `fork()` + `exec()`
-✅ Logging of process state transitions
+✅ Process generator that injects processes based on arrival time  
+✅ Scheduler that manages queues and selects process execution order  
+✅ Simulated clock to synchronize execution time  
+✅ Real OS process execution using `fork()` + `exec()`  
+✅ Logging of process state transitions  
 ✅ Performance evaluation metrics (CPU utilization, waiting time, WTA, etc.)
 
 The simulator closely models OS behavior such as:
 
-* READY → RUNNING → STOPPED → FINISHED
-* Context switching
-* Preemption (for certain algorithms)
-* Accurate timing using a shared clock
+- READY → RUNNING → STOPPED → FINISHED  
+- Context switching  
+- Preemption (for certain algorithms)  
+- Accurate timing using a shared clock
 
 ---
 
@@ -50,27 +50,25 @@ The simulator closely models OS behavior such as:
 This simulator supports the following scheduling policies:
 
 ### 🟦 **1) HPF — Highest Priority First**
-
-* **Non-preemptive**
-* Always selects the highest priority job first
+- **Non-preemptive**
+- Always selects the highest priority job first
 
 ### 🟨 **2) SRTN — Shortest Remaining Time Next**
-
-* **Preemptive**
-* Always selects the process with the shortest remaining time
-* Preempts current process if a better process arrives
+- **Preemptive**
+- Always selects the process with the shortest remaining time
+- Preempts current process if a better process arrives
 
 ### 🟩 **3) RR — Round Robin**
-
-* **Preemptive**
-* Each process runs for a fixed time quantum
-* Process is paused and returned to the queue if unfinished
+- **Preemptive**
+- Each process runs for a fixed time quantum
+- Process is paused and returned to the queue if unfinished
 
 ---
 
 ## 🏗 **Project Structure**
 
 ```
+
 .
 ├── scheduler.c             # Core scheduler + algorithms + logs + metrics
 ├── process_generator.c     # Reads input file and sends arriving processes
@@ -80,17 +78,17 @@ This simulator supports the following scheduling policies:
 ├── test_generator.c        # Random test generator (optional)
 ├── Makefile                # Build automation
 └── README.md               # Documentation
-```
+
+````
 
 ---
 
 ## 🛠 **Build & Run**
 
 ### ✅ **1. Compile**
-
 ```bash
 make
-```
+````
 
 ### ✅ **2. Run the system**
 
@@ -178,5 +176,7 @@ Contains final evaluation metrics:
 * Accuracy depends on the simulated clock tick synchronization
 * Extremely large workloads may need IPC buffer tuning
 * Output format may differ depending on testing configuration
+
+---
 
 
