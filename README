@@ -1,225 +1,182 @@
-# OS CPU Scheduler Simulation Project
 
-This project is a comprehensive simulation of an Operating System (OS) CPU Scheduler implemented in C. It emulates key OS concepts such as process creation, scheduling, execution, and inter-process communication (IPC) using mechanisms like shared memory, message queues, and signals. The simulation supports three scheduling algorithms: Highest Priority First (HPF - Preemptive), Shortest Job Next (SJN - Non-Preemptive), and Round Robin (RR - Preemptive with time quantum). 
+# 🚀 **SchedSim — CPU Scheduling Simulator**
 
-The project is designed to mimic real OS behavior in a controlled environment, allowing users to observe process lifecycle events, performance metrics, and scheduling decisions. It uses an emulated clock for time synchronization and generates logs and performance reports for analysis.
+![C](https://img.shields.io/badge/Language-C-blue)
+![Linux](https://img.shields.io/badge/Platform-Linux-green)
+![OS](https://img.shields.io/badge/Topic-Operating%20Systems-orange)
+![Simulation](https://img.shields.io/badge/Type-Process%20Simulation-purple)
 
----
-
-## Project Overview
-
-### Purpose
-The goal is to simulate CPU scheduling in a multi-process environment, demonstrating how different algorithms handle process arrival, execution, preemption, and completion. It highlights OS concepts like:
-- Process states (Ready, Running, Stopped, Finished).
-- Context switching and preemption.
-- Performance metrics (e.g., CPU utilization, Weighted Turnaround Time - WTA).
-- IPC for coordination between components.
-
-The simulation reads process data from a file (`processes.txt`), starts processes at their arrival times, schedules them, and tracks their execution until all are finished.
-
-### Key Assumptions and Simplifications
-- Time is emulated via a shared memory clock ticking every second.
-- Processes are "executed" by busy-waiting on clock ticks (no real computation).
-- No actual CPU resource contention; everything runs on the host machine.
-- Priorities are integers (lower number = higher priority).
-- Processes are assumed to be CPU-bound (no I/O simulation).
-- Maximum processes: 1000 (configurable in `process_generator.c`).
+> A complete Operating System **CPU Scheduling Simulator** written in **C**, implementing real process execution, scheduling logic, and performance metrics.
 
 ---
 
-## Project Architecture
+## 📌 **Table of Contents**
 
-The system is composed of four main processes that interact via IPC:
-
-1. **Process Generator (`process_generator.out`)**:
-   - Reads process data from `processes.txt`.
-   - Forks the Clock and Scheduler processes.
-   - Sends processes to the Scheduler via a message queue at their arrival times.
-   - Sends a termination message when all processes are dispatched.
-
-2. **Clock (`clk.out`)**:
-   - A standalone process that maintains a shared memory integer representing system time.
-   - Increments the clock every second (using `sleep(1)`).
-   - Provides a unified time reference via `getClk()` for all components.
-
-3. **Scheduler (`scheduler.out`)**:
-   - Receives processes from the Generator via message queue.
-   - Manages the Ready Queue using data structures (priority queues or FIFO).
-   - Implements scheduling algorithms to decide which process runs next.
-   - Forks and controls child processes (via signals: SIGSTOP/SIGCONT).
-   - Handles process completion (via SIGUSR1 from children).
-   - Logs state changes and computes performance metrics.
-
-4. **Process (`process.out`)**:
-   - Represents individual user processes.
-   - Each instance is forked by the Scheduler.
-   - Runs for a specified "runtime" by counting clock ticks.
-   - Notifies the Scheduler on completion via SIGUSR1.
-
-### System Flow
-1. **Startup**: Generator forks Clock and Scheduler, initializes message queue.
-2. **Process Arrival**: Generator sends processes to Scheduler at arrival times.
-3. **Scheduling**: Scheduler adds arrivals to Ready Queue, selects next process based on algorithm.
-4. **Execution**: Scheduler forks/resumes processes; processes count ticks until done.
-5. **Completion**: Process signals Scheduler; Scheduler logs and updates metrics.
-6. **Termination**: After all processes finish, Scheduler writes logs/perf files; Generator cleans up.
+* [Overview](#-overview)
+* [Scheduling Algorithms](#-scheduling-algorithms)
+* [Project Structure](#-project-structure)
+* [Build & Run](#-build--run)
+* [Usage](#-usage)
+* [Input Format](#-input-format)
+* [Output Files](#-output-files)
+* [Performance Metrics](#-performance-metrics)
+* [Notes & Limitations](#-notes--limitations)
+* [Author](#-author)
 
 ---
 
-## Features and Scheduling Algorithms
+## 🧠 **Overview**
 
-The Scheduler supports three algorithms, selected at runtime:
+**SchedSim** simulates CPU process scheduling using:
 
-| Algorithm | Type | Description | Preemption Logic | Data Structure Used |
-|-----------|------|-------------|------------------|---------------------|
-| **HPF (Highest Priority First)** | Preemptive | Selects the process with the highest priority (lowest number). Preempts the current process if a higher-priority one arrives. | Checks Ready Queue for better priority on arrivals/clock ticks. | Priority Queue (Min-Heap, priority-based comparator). |
-| **SJN (Shortest Job Next)** | Non-Preemptive | Selects the process with the shortest total runtime. Once started, it runs to completion without interruption. | No preemption; only switches on completion. | Priority Queue (Min-Heap, runtime-based comparator). |
-| **RR (Round Robin)** | Preemptive | Cycles through processes in FIFO order, giving each a fixed time quantum. Preempts if quantum expires and remaining time > 0. | Quantum expiration or arrivals (but FIFO, so no priority preemption). | FIFO Queue (Circular Buffer). |
+✅ Process generator that injects processes based on arrival time
+✅ Scheduler that manages queues and selects process execution order
+✅ Simulated clock to synchronize execution time
+✅ Real OS process execution using `fork()` + `exec()`
+✅ Logging of process state transitions
+✅ Performance evaluation metrics (CPU utilization, waiting time, WTA, etc.)
 
-- **Time Quantum** (for RR): User-specified (default: 1 if invalid).
-- **Logging**: Detailed state transitions (Started, Resumed, Stopped, Finished) with timestamps.
-- **Performance Metrics**: CPU Utilization, Avg WTA, Avg Waiting Time, Std Dev of WTA.
+The simulator closely models OS behavior such as:
 
----
-
-## File Structure
-
-- **`headers.h`**: Shared headers with includes, defines (e.g., SHKEY for shared memory, MSG_KEY for message queue), data structures (e.g., `processData`, `ProcessMessage`), and utility functions (e.g., `getClk()`, `initClk()`).
-- **`process_generator.c`**: Main entry point; handles file parsing, user input, forking, and message sending.
-- **`clk.c`**: Emulates the system clock using shared memory.
-- **`scheduler.c`**: Core scheduling logic, queue management, process control, logging, and performance calculation.
-- **`process.c`**: Process execution logic; counts clock ticks and signals completion.
-- **`test_generator.c`**: Utility to generate random `processes.txt` files for testing.
-- **`Makefile`**: Builds executables, cleans files, runs tests, and starts the simulation.
-- **`processes.txt`**: Input file format: `#id arrival runtime priority` (one process per line, comments with `#`).
-- **`scheduler.log`**: Output log of process states.
-- **`scheduler.perf`**: Output performance summary.
+* READY → RUNNING → STOPPED → FINISHED
+* Context switching
+* Preemption (for certain algorithms)
+* Accurate timing using a shared clock
 
 ---
 
-## IPC Mechanisms Used
+## ✅ **Scheduling Algorithms**
 
-- **Shared Memory**: Clock value (integer) shared via `shmget(SHKEY)`; accessed by all processes for synchronization.
-- **Message Queues**: Generator → Scheduler communication using `msgget(MSG_KEY)`; sends `ProcessMessage` structs (type 1: process data, type 2: termination).
-- **Signals**:
-  - `SIGUSR1`: Process → Scheduler on completion.
-  - `SIGSTOP` / `SIGCONT`: Scheduler → Process to pause/resume.
-  - `SIGINT`: For cleanup (e.g., kill clock, remove IPC resources).
-- **Fork/Exec**: Scheduler creates child processes via `fork()` and `execl("./process.out", ...)`.
+This simulator supports the following scheduling policies:
 
-Error handling includes retries (e.g., for shared memory attachment) and graceful cleanup on SIGINT.
+### 🟦 **1) HPF — Highest Priority First**
+
+* **Non-preemptive**
+* Always selects the highest priority job first
+
+### 🟨 **2) SRTN — Shortest Remaining Time Next**
+
+* **Preemptive**
+* Always selects the process with the shortest remaining time
+* Preempts current process if a better process arrives
+
+### 🟩 **3) RR — Round Robin**
+
+* **Preemptive**
+* Each process runs for a fixed time quantum
+* Process is paused and returned to the queue if unfinished
 
 ---
 
-## Setup and Execution
+## 🏗 **Project Structure**
 
-### Prerequisites
-- GCC compiler (tested on Linux/Unix-like systems).
-- Basic libraries: `stdio.h`, `sys/ipc.h`, `signal.h`, etc. (standard on most systems).
+```
+.
+├── scheduler.c             # Core scheduler + algorithms + logs + metrics
+├── process_generator.c     # Reads input file and sends arriving processes
+├── process.c               # The actual running process program
+├── clk.c                   # Simulated clock for timing synchronization
+├── headers.h               # Shared structs, constants, and IPC utilities
+├── test_generator.c        # Random test generator (optional)
+├── Makefile                # Build automation
+└── README.md               # Documentation
+```
 
-### Compilation
+---
+
+## 🛠 **Build & Run**
+
+### ✅ **1. Compile**
+
 ```bash
-make build  # Compiles all executables: process_generator.out, clk.out, scheduler.out, process.out, test_generator.out
+make
 ```
 
-### Generate Test Data
-Create a random `processes.txt`:
+### ✅ **2. Run the system**
+
 ```bash
-make test  # Prompts for number of processes; generates random arrivals, runtimes, priorities
+./process_generator.out
 ```
-Or manually edit `processes.txt` (example):
-```
-#id arrival runtime priority
-1 0 5 2
-2 1 3 1
-3 2 4 3
-```
-
-### Run the Simulation
-```bash
-make run  # Runs ./process_generator.out
-```
-- Prompts for algorithm (1: HPF, 2: SJN, 3: RR).
-- For RR, prompts for quantum.
-- Outputs console messages for sent processes and termination.
-- Generates `scheduler.log` and `scheduler.perf`.
-
-### Cleanup
-```bash
-make clean  # Removes executables and output files
-```
-
-### Example Output
-- Console: "At time 0: Sent process 1 (arrival=0, runtime=5, priority=2)"
-- `scheduler.log`: "At time 0 process 1 started arr 0 total 5 remain 5 wait 0"
-- `scheduler.perf`: "CPU utilization = 100% \n Avg WTA = 1.67 \n Avg Waiting = 2.33 \n Std WTA = 0.47"
 
 ---
 
-## Outputs and Analysis
+## ▶️ **Usage**
 
-1. **`scheduler.log`**:
-   - Format: `#At time x process y state arr w total z remain y wait k`
-   - States: started, resumed, stopped, finished.
-   - Tracks arrival (arr), total runtime (total), remaining time (remain), wait time (wait).
+After running `process_generator.out`, you’ll be asked to select:
 
-2. **`scheduler.perf`**:
-   - CPU Utilization: (Busy Time / Total Time) * 100%.
-   - Avg WTA: Average Weighted Turnaround Time (Turnaround / Runtime).
-   - Avg Waiting: Average time in Ready Queue.
-   - Std WTA: Standard Deviation of WTA for variability analysis.
+✅ Scheduling algorithm (HPF / SRTN / RR)
+✅ Quantum (only if RR)
 
-These outputs allow evaluation of algorithm efficiency (e.g., HPF favors high-priority processes, potentially starving low ones; SJN minimizes average waiting but non-preemptive).
+Then the system starts:
+
+* clock starts ticking
+* scheduler receives processes by arrival time
+* processes are executed and managed dynamically
+* logs and performance results are generated at the end
 
 ---
 
-## Team Members and Contributions
+## 🧾 **Input Format**
 
-The project was developed by Group 6, with 6 members collaborating across phases. Phase 1 focused on basic simulation (forking, IPC, algorithms), while Phase 2 added advanced features (logging, performance, data structures). Contributions are detailed below, based on code comments and Makefile attributions. Each member handled specific modules, with some overlap in integration (e.g., Members 4-6 on scheduler logic).
+Processes are loaded from an input file with attributes like:
 
-- **Member 1: Mouaz Mohammed - Logger and Performance System (Phase 2 Focus)**:
-  - Designed and implemented the logging system (`logger_init()`, `log_state()`, file formatting in `scheduler.c`).
-  - Created the performance metrics module (`PerfStats` struct, `perf_on_process_finished()`, `perf_write_file()`).
-  - Handled floating-point formatting (`fmt_2dec_trim()`) and calculations for CPU utilization, Avg WTA, Avg Waiting, and Std Dev WTA.
-  - Ensured accurate tracking of busy time, turnaround, and statistical computations (e.g., variance for std dev).
-  - Contribution Impact: Enabled post-simulation analysis; critical for evaluating scheduler efficiency without manual calculations.
+* ID
+* Arrival Time
+* Runtime
+* Priority
 
-- **Member 2: Abdelrahman Salah - Data Structures and process.c (Phase 2 Focus)**:
-  - Designed core data structures: `PCB` (Process Control Block) with fields like `pid`, `remaining_time`, `state`.
-  - Implemented priority queues (min-heap) for HPF/SJN (`pq_init()`, `pq_push()`, `pq_pop()`, comparators like `cmp_hpf()`, `cmp_sjn()`).
-  - Created FIFO queue for RR (`rr_push()`, `rr_pop()`, circular buffer).
-  - Developed `process.c`: Clock synchronization, remaining time tracking, and SIGUSR1 notification on completion.
-  - Contribution Impact: Provided efficient data management (O(log N) for heaps); ensured process execution logic was robust and phase-independent.
+Example:
 
-- **Member 3: Farah Mohamed - Process Generator**:
-  - Implemented `process_generator.c`: File parsing (`processes.txt`), sorting by arrival, user input for algorithm/quantum.
-  - Handled forking of Clock and Scheduler, message queue creation (`msgget()`), and sending processes/termination messages (`msgsnd()`).
-  - Added synchronization with clock ticks and termination handling (`clearResources()` on SIGINT).
-  - Contribution Impact: Acted as the system orchestrator; ensured reliable input handling and startup sequence, preventing race conditions.
+```
+#ID  Arrival  Runtime  Priority
+1    0        5        2
+2    2        3        1
+3    4        2        3
+```
 
-- **Member 4: Alaa Mahmoud - Message Queue and Arrival Handling**:
-  - Managed message queue reception in Scheduler (`msgrcv()` in `handle_arrivals()`).
-  - Created PCBs from incoming messages and inserted them into Ready Queue.
-  - Implemented arrival-triggered preemption (e.g., for HPF: check if new process has higher priority).
-  - Collaborated on unified dispatch logic (`dispatch_if_idle()`) and main loop coordination.
-  - Contribution Impact: Ensured seamless process arrival integration; critical for real-time handling in preemptive algorithms.
+---
 
-- **Member 5: Karim Atwa - Scheduling Algorithms**:
-  - Developed core algorithm logic: `HPF_Scheduler()`, `SJN_Scheduler()`, `RR_Scheduler()` for decision-making.
-  - Handled preemption checks (`check_preemption()`), quantum expiration for RR (`rr_check_quantum()`).
-  - Integrated algorithm selection in main loop and dispatch decisions.
-  - Collaborated on context switching and queue interactions.
-  - Contribution Impact: Core of the project; algorithms were implemented with correct preemption/non-preemption behavior, ensuring simulation accuracy.
+## 📤 **Output Files**
 
-- **Member 6: Ahmed Yasser - Process Control and State Management**:
-  - Managed process lifecycle: Forking/exec (`start_new_process()`), signals for pause/resume (`stop_process()`, `resume_process()`).
-  - Handled state transitions (READY → RUNNING → STOPPED) and updates (e.g., `update_running_remaining()`).
-  - Implemented signal handler for child completion (`on_child_finished()`).
-  - Collaborated on main scheduler loop, idle dispatch, and integration with logging/perf.
-  - Contribution Impact: Ensured reliable process control; prevented issues like zombie processes and maintained state consistency.
+The simulator generates:
 
-### Collaboration Notes
-- **Overlaps**: Members 4-6 heavily collaborated on `scheduler.c` (e.g., unified dispatch, preemption checks), ensuring modular integration.
-- **Phases**: Members 1-2 focused on Phase 2 enhancements (logging/data structures), building on Phase 1 foundations.
-- **Testing**: The team used `test_generator.c` for random inputs; algorithms were validated against expected behaviors (e.g., HPF preemption on higher priority arrival).
-- **Challenges Addressed**: Race conditions in clock synchronization, precise remaining time updates, and efficient queue operations.
+### ✅ **`scheduler.log`**
+
+Contains runtime logs:
+
+* process started
+* process stopped (preemption)
+* process resumed
+* process finished
+* current time + remaining time + waiting time
+
+### ✅ **`scheduler.perf`**
+
+Contains final evaluation metrics:
+
+* CPU utilization
+* Avg waiting time
+* Avg WTA
+* Std deviation of WTA
+
+---
+
+## 📊 **Performance Metrics**
+
+| Metric               | Description                                  |
+| -------------------- | -------------------------------------------- |
+| **CPU Utilization**  | Percentage of time CPU was busy              |
+| **Avg Waiting Time** | Average time spent waiting in READY queue    |
+| **Avg WTA**          | Weighted Turnaround Time                     |
+| **Std WTA**          | Standard deviation of WTA (fairness measure) |
+
+---
+
+## ⚠️ **Notes & Limitations**
+
+* This is a **simulation**, not an actual kernel scheduler
+* Accuracy depends on the simulated clock tick synchronization
+* Extremely large workloads may need IPC buffer tuning
+* Output format may differ depending on testing configuration
+
+
