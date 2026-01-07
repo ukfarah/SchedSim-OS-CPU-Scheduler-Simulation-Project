@@ -1,16 +1,13 @@
 
-## 🚀 **SchedSim — CPU Scheduling Simulator**
+# 🚀 SchedSim — CPU Scheduling Simulator
 
-![C](https://img.shields.io/badge/Language-C-blue)
-![Linux](https://img.shields.io/badge/Platform-Linux-green)
-![OS](https://img.shields.io/badge/Topic-Operating%20Systems-orange)
-![Simulation](https://img.shields.io/badge/Type-Process%20Simulation-purple)
+![C](https://img.shields.io/badge/Language-C-blue) ![Linux](https://img.shields.io/badge/Platform-Linux-green) ![OS](https://img.shields.io/badge/Topic-Operating%20Systems-orange) ![Simulation](https://img.shields.io/badge/Type-Process%20Simulation-purple)
 
 > A complete Operating System **CPU Scheduling Simulator** written in **C**, implementing real process execution, scheduling logic, and performance metrics.
 
 ---
 
-## 📌 **Table of Contents**
+## 📌 Table of Contents
 
 - [Overview](#-overview)
 - [Scheduling Algorithms](#-scheduling-algorithms)
@@ -25,47 +22,45 @@
 
 ---
 
-## 🧠 **Overview**
+## 🧠 Overview
 
-**SchedSim** simulates CPU process scheduling using:
+SchedSim simulates CPU process scheduling in an Operating System environment using:
 
-✅ Process generator that injects processes based on arrival time  
-✅ Scheduler that manages queues and selects process execution order  
-✅ Simulated clock to synchronize execution time  
-✅ Real OS process execution using `fork()` + `exec()`  
-✅ Logging of process state transitions  
-✅ Performance evaluation metrics (CPU utilization, waiting time, WTA, etc.)
+- A process generator that injects processes at their correct arrival times
+- A scheduler that manages ready queues and dispatches processes
+- A simulated clock to synchronize execution time
+- Real OS process execution using `fork()` + `exec()`
+- Logging of process state transitions
+- Performance evaluation metrics such as CPU utilization, waiting time, and WTA
 
-The simulator closely models OS behavior such as:
+It models OS process lifecycle transitions such as:
 
-- READY → RUNNING → STOPPED → FINISHED  
-- Context switching  
-- Preemption (for certain algorithms)  
-- Accurate timing using a shared clock
+READY → RUNNING → STOPPED → FINISHED
 
 ---
 
-## ✅ **Scheduling Algorithms**
+## ✅ Scheduling Algorithms
 
 This simulator supports the following scheduling policies:
 
-### 🟦 **1) HPF — Highest Priority First**
-- **Non-preemptive**
-- Always selects the highest priority job first
+### 1) HPF — Highest Priority First
+- Non-preemptive
+- Always selects the highest priority process
+- Once started, the process runs until completion
 
-### 🟨 **2) SRTN — Shortest Remaining Time Next**
-- **Preemptive**
-- Always selects the process with the shortest remaining time
-- Preempts current process if a better process arrives
+### 2) SRTN — Shortest Remaining Time Next
+- Preemptive
+- Always runs the process with the shortest remaining time
+- Preempts the current running process if a better candidate arrives
 
-### 🟩 **3) RR — Round Robin**
-- **Preemptive**
+### 3) RR — Round Robin
+- Preemptive
 - Each process runs for a fixed time quantum
-- Process is paused and returned to the queue if unfinished
+- If unfinished, the process is paused and pushed back into the ready queue
 
 ---
 
-## 🏗 **Project Structure**
+## 🏗 Project Structure
 
 ```
 
@@ -83,14 +78,14 @@ This simulator supports the following scheduling policies:
 
 ---
 
-## 🛠 **Build & Run**
+## 🛠 Build & Run
 
-### ✅ **1. Compile**
+### 1) Compile
 ```bash
 make
 ````
 
-### ✅ **2. Run the system**
+### 2) Run the system
 
 ```bash
 ./process_generator.out
@@ -98,27 +93,27 @@ make
 
 ---
 
-## ▶️ **Usage**
+## ▶️ Usage
 
-After running `process_generator.out`, you’ll be asked to select:
+After running `process_generator.out`, you will be asked to choose:
 
-✅ Scheduling algorithm (HPF / SRTN / RR)
-✅ Quantum (only if RR)
+* Scheduling algorithm (HPF / SRTN / RR)
+* Quantum value (only if RR)
 
-Then the system starts:
+Then the simulation starts:
 
-* clock starts ticking
-* scheduler receives processes by arrival time
-* processes are executed and managed dynamically
-* logs and performance results are generated at the end
+* The clock begins ticking
+* Processes arrive and enter the ready queue
+* The scheduler dispatches processes according to the selected policy
+* Logs and performance results are generated at the end
 
 ---
 
-## 🧾 **Input Format**
+## 🧾 Input Format
 
-Processes are loaded from an input file with attributes like:
+The input file contains process definitions such as:
 
-* ID
+* Process ID
 * Arrival Time
 * Runtime
 * Priority
@@ -134,49 +129,47 @@ Example:
 
 ---
 
-## 📤 **Output Files**
+## 📤 Output Files
 
-The simulator generates:
+The simulator generates output files such as:
 
-### ✅ **`scheduler.log`**
+### scheduler.log
 
-Contains runtime logs:
+Contains runtime logs including:
 
-* process started
-* process stopped (preemption)
-* process resumed
-* process finished
-* current time + remaining time + waiting time
+* process start
+* stop/resume (preemption)
+* process finish
+* current time and remaining time updates
 
-### ✅ **`scheduler.perf`**
+### scheduler.perf
 
-Contains final evaluation metrics:
+Contains final performance statistics:
 
 * CPU utilization
-* Avg waiting time
-* Avg WTA
-* Std deviation of WTA
+* Average waiting time
+* Average WTA (Weighted Turnaround Time)
+* Standard deviation of WTA
 
 ---
 
-## 📊 **Performance Metrics**
+## 📊 Performance Metrics
 
-| Metric               | Description                                  |
-| -------------------- | -------------------------------------------- |
-| **CPU Utilization**  | Percentage of time CPU was busy              |
-| **Avg Waiting Time** | Average time spent waiting in READY queue    |
-| **Avg WTA**          | Weighted Turnaround Time                     |
-| **Std WTA**          | Standard deviation of WTA (fairness measure) |
-
----
-
-## ⚠️ **Notes & Limitations**
-
-* This is a **simulation**, not an actual kernel scheduler
-* Accuracy depends on the simulated clock tick synchronization
-* Extremely large workloads may need IPC buffer tuning
-* Output format may differ depending on testing configuration
+| Metric           | Description                                    |
+| ---------------- | ---------------------------------------------- |
+| CPU Utilization  | Percentage of time the CPU was busy            |
+| Avg Waiting Time | Average time spent waiting in the ready queue  |
+| Avg WTA          | Average weighted turnaround time               |
+| Std WTA          | Standard deviation of WTA (fairness indicator) |
 
 ---
 
+## ⚠️ Notes & Limitations
+
+* This is a simulation, not an actual kernel scheduler
+* Timing depends on correct synchronization with the simulated clock
+* Very large workloads may require IPC buffer tuning
+* Output format may differ depending on your test cases
+
+---
 
